@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "posts",
     "rent",
     "availbikes",
+    "tours",
     "rest_framework",
     "corsheaders", #to allow front and back work together
     "whitenoise"
