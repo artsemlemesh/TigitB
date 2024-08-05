@@ -25,7 +25,7 @@ SECRET_KEY = "django-insecure-05f$xx)d^qzj08+qjc0r3u8*jl64re&tjz5hdr^-owt^b+9ub3
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['tigit-backend-9ddaf12b1666.herokuapp.com']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'tigit-backend-9ddaf12b1666.herokuapp.com', 'tight-frontend-bd2e23f4c2ef.herokuapp.com']
 
 
 # Application definition
