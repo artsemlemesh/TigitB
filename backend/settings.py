@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 import os.path
+from celery.schedules import crontab
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -37,6 +39,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django_celery_beat", # run pip install django-celery-beat before, this is for scheduling periodic tasks
     "faq",
     "posts",
     "rent",
@@ -45,7 +48,7 @@ INSTALLED_APPS = [
     "authentication",
     "rest_framework",
     "corsheaders", #to allow front and back work together
-    "whitenoise"
+    "whitenoise",
 ]
 
 # Configure WhiteNoise to serve static files
@@ -73,7 +76,7 @@ ROOT_URLCONF = "backend.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [os.path.join(BASE_DIR, 'templates')],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -85,6 +88,14 @@ TEMPLATES = [
         },
     },
 ]
+# ASGI_APPLICATION = 'backend.asgi.application'
+
+# # Channel layers configuration (using in-memory for simplicity)
+# CHANNEL_LAYERS = {
+#     'default': {
+#         'BACKEND': 'channels.layers.InMemoryChannelLayer',
+#     },
+# }
 
 WSGI_APPLICATION = "backend.wsgi.application"
 
@@ -146,3 +157,33 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'image')
+
+# settings.py
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.yandex.com'  # Yandex SMTP server
+EMAIL_PORT = 465  # Port for TLS
+EMAIL_USE_SSL = True
+EMAIL_HOST_USER = 'artem.lems@yandex.ru'  # Your Yandex email address
+EMAIL_HOST_PASSWORD = 'eqkybplwcwvdwbms'  # Your Yandex email password
+DEFAULT_FROM_EMAIL = 'artem.lems@yandex.ru'
+
+
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = 'json'
+
+
+CELERY_BEAT_SCHEDULE = {
+    'cleanup-expired-rentals-every-night': {
+        'task': 'posts.tasks.cleanup_test_posts',
+        'schedule': crontab(minute=0),  # Runs at the beginning of every hour
+    },
+    'update-bike-availability-every-10-minutes': {
+        'task': 'availbikes.tasks.update_bike_availability',
+        'schedule': crontab(minute='*/10'), #runs every 10 min
+    }
+}
+ASGI_APPLICATION = "backend.asgi.application"
